@@ -5,6 +5,17 @@ class Fraction {
   final BigInt numerator;
   final BigInt denominator;
 
+  // динамическая типизация числового типа
+  static BigInt _toBigInt(Object value) {
+    return switch (value) {
+      BigInt b => b,
+      int i => BigInt.from(i),
+      _ => throw ArgumentError(
+        "[Ошибка] Получено значение отличного типа от int и BigInt (${value.runtimeType}).",
+      ),
+    };
+  }
+
   // инициализация объекта
   Fraction._(this.numerator, this.denominator);
 
@@ -20,8 +31,9 @@ class Fraction {
   }
 
   // фабричный конструктор №2
-  factory Fraction.fromBigInt(BigInt num, [BigInt? den]) {
-    final d = den ?? _one;
+  factory Fraction(Object num, [Object? den]) {
+    final n = _toBigInt(num);
+    final d = _toBigInt(den ?? _one);
 
     // ловим ошибки
     if (d == _zero) {
@@ -31,21 +43,66 @@ class Fraction {
     }
 
     // проверка на ноль
-    if (num == _zero) {
-      return Fraction._(num, _one);
+    if (n == _zero) {
+      return Fraction._(n, _one);
     }
 
-    final BigInt gcdValue = _gcd(num.abs(), d.abs());
+    final BigInt gcdValue = _gcd(n.abs(), d.abs());
 
-    final sign = (num < _zero) ^ (d < _zero) ? -_one : _one;
-    final numerator = sign * (num.abs() ~/ gcdValue);
+    final sign = (n < _zero) ^ (d < _zero) ? -_one : _one;
+    final numerator = sign * (n.abs() ~/ gcdValue);
     final denominator = d.abs() ~/ gcdValue;
 
     return Fraction._(numerator, denominator);
   }
 
-  // фабричный конструктор №1
-  factory Fraction(int num, [int den = 1]) {
-    return Fraction.fromBigInt(BigInt.from(num), BigInt.from(den));
+  // -=- Перегрузка операторов -=-
+
+  Fraction operator +(Fraction other) {
+    return Fraction(
+      numerator * other.denominator + denominator * other.numerator,
+      denominator * other.denominator,
+    );
+  }
+
+  Fraction operator -(Fraction other) {
+    return Fraction(
+      numerator * other.denominator - denominator * other.numerator,
+      denominator * other.denominator,
+    );
+  }
+
+  Fraction operator -() {
+    return Fraction._(-numerator, denominator);
+  }
+
+  Fraction operator *(Fraction other) {
+    return Fraction(
+      numerator * other.numerator,
+      denominator * other.denominator,
+    );
+  }
+
+  Fraction operator /(Fraction other) {
+    return Fraction(
+      numerator * other.denominator,
+      denominator * other.numerator,
+    );
+  }
+
+  BigInt operator ~/(Fraction other) {
+    if (other.numerator == _zero) {
+      throw ArgumentError('[Ошибка] Деление на ноль.');
+    }
+
+    return (numerator * other.denominator) ~/ (denominator * other.numerator);
+  }
+
+  Fraction operator %(Fraction other) {
+    if (other.numerator == _zero) {
+      throw ArgumentError('[Ошибка] Деление на ноль.');
+    }
+
+    return this - (Fraction(this ~/ other) * other);
   }
 }
