@@ -1,4 +1,4 @@
-import "math_exception.dart";
+import "exception.dart";
 
 final _zero = BigInt.zero;
 final _one = BigInt.one;
