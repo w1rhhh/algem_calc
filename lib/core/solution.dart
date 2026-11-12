@@ -54,6 +54,12 @@ class Solution<T> {
   bool get isSuccess => (error == null) && (value != null);
   bool get hasSteps => steps.isNotEmpty;
 
+  // геттер ответа
+  T get ans {
+    if (isFail) throw error!;
+    return value as T;
+  }
+
   @override
   String toString([int depth = 0]) {
     final buffer = StringBuffer();
