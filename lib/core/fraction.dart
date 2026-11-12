@@ -1,3 +1,5 @@
+import "math_exception.dart";
+
 final _zero = BigInt.zero;
 final _one = BigInt.one;
 
@@ -10,10 +12,22 @@ class Fraction implements Comparable<Fraction> {
     return switch (value) {
       BigInt b => b,
       int i => BigInt.from(i),
-      _ => throw ArgumentError(
+      _ => throw CalcException.invalidFormat(
         "[Ошибка] Получено значение отличного типа от int и BigInt (${value.runtimeType}).",
       ),
     };
+  }
+
+  // исключить системные ошибки при парсинге, заменить их на самописные
+  static BigInt _parseBigInt(String text) {
+    final res = BigInt.tryParse(text);
+    if (res == null) {
+      throw CalcException.invalidFormat(
+        "[Ошибка] Некорректная запись числа: '$text'.",
+      );
+    }
+
+    return res;
   }
 
   // инициализация объекта
@@ -37,7 +51,7 @@ class Fraction implements Comparable<Fraction> {
 
     // ловим ошибки
     if (d == _zero) {
-      throw ArgumentError(
+      throw CalcException.divisionByZero(
         "[Ошибка] Знаменатель дроби не может равняться нулю.",
       );
     }
@@ -60,7 +74,7 @@ class Fraction implements Comparable<Fraction> {
   factory Fraction.parse(String input) {
     final clean = input.trim().replaceAll(",", ".");
 
-    if (clean.isEmpty) {
+    if (clean.isEmpty || clean == "-") {
       return Fraction._(_zero, _one);
     }
 
@@ -68,37 +82,40 @@ class Fraction implements Comparable<Fraction> {
       final parts = clean.split("/");
 
       if (parts.length != 2) {
-        throw ArgumentError("[Ошибка] Дробь введена неверно.");
+        throw CalcException.invalidFormat("[Ошибка] Дробь введена неверно.");
       }
 
       return Fraction(
-        BigInt.parse(parts[0].trim()),
-        BigInt.parse(parts[1].trim()),
+        _parseBigInt(parts[0].trim()),
+        _parseBigInt(parts[1].trim()),
       );
     }
 
     if (clean.contains(".")) {
       final parts = clean.split(".");
 
-      if (parts.length != 2 || parts[1].isEmpty) {
-        throw ArgumentError("[Ошибка] Дробь введена неверно.");
+      if (parts.length != 2 || parts[1].trim().isEmpty) {
+        throw CalcException.invalidFormat("[Ошибка] Дробь введена неверно.");
       }
 
       final isNegative = clean.startsWith("-");
       final wholeStr = parts[0].replaceAll("-", "").trim();
       final fracStr = parts[1].trim();
 
-      final whole = wholeStr.isEmpty ? _zero : BigInt.parse(wholeStr);
-      final frac = BigInt.parse(fracStr);
+      if (fracStr.startsWith("-") || fracStr.startsWith("+")) {
+        throw CalcException.invalidFormat("[Ошибка] Дробь введена неверно.");
+      }
+
+      final whole = wholeStr.isEmpty ? _zero : _parseBigInt(wholeStr);
+      final frac = _parseBigInt(fracStr);
 
       final scale = BigInt.from(10).pow(fracStr.length);
-
       final num = whole * scale + frac;
 
       return Fraction(isNegative ? -num : num, scale);
     }
 
-    return Fraction._(BigInt.parse(clean), _one);
+    return Fraction._(_parseBigInt(clean), _one);
   }
 
   bool get isZero => numerator == _zero;
@@ -143,7 +160,7 @@ class Fraction implements Comparable<Fraction> {
 
   BigInt operator ~/(Fraction other) {
     if (other.numerator == _zero) {
-      throw ArgumentError("[Ошибка] Деление на ноль.");
+      throw CalcException.divisionByZero();
     }
 
     return (numerator * other.denominator) ~/ (denominator * other.numerator);
@@ -151,7 +168,7 @@ class Fraction implements Comparable<Fraction> {
 
   Fraction operator %(Fraction other) {
     if (other.numerator == _zero) {
-      throw ArgumentError("[Ошибка] Деление на ноль.");
+      throw CalcException.divisionByZero();
     }
 
     return this - (Fraction(this ~/ other) * other);
