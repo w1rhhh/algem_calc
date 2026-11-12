@@ -1,79 +1,79 @@
 import "exception.dart";
 
-class CalcStep {
-  final String head;
-  final String description;
-  final String latex;
-
-  const CalcStep({
-    required this.head,
-    this.description = "",
-    required this.latex,
-  });
-
-  @override
-  String toString() =>
-      description.isEmpty ? "$head\n$latex" : "$head ($description)\n$latex";
-}
-
 class Solution<T> {
-  final T? value;
-  final String finalLatex;
-  final List<CalcStep> steps;
-  final CalcException? error;
+  final String head; // заголовок
+  final String description; // описание
+  final T? value; // ответ
+  final String latex; // формула LaTeX
+  final List<Solution<Object?>> steps; // дерево решений
+  final CalcException? error; // ошибки
 
-  const Solution._({
+  Solution._({
+    required this.head,
+    required this.description,
     this.value,
-    required this.finalLatex,
-    required this.steps,
+    required this.latex,
+    List<Solution<Object?>> steps = const [],
     this.error,
-  });
+  }) : steps = List.unmodifiable(steps);
 
-  // конструктор в случае успеха
   factory Solution.success({
+    required String head,
+    required String description,
     required T value,
-    required String finalLatex,
-    required List<CalcStep> steps,
+    required String latex,
+    List<Solution<Object?>> steps = const [],
   }) {
     return Solution._(
+      head: head,
+      description: description,
       value: value,
-      finalLatex: finalLatex,
-      steps: List.unmodifiable(steps),
+      latex: latex,
+      steps: steps,
     );
   }
 
-  // конструктор в случае ошибки
-  factory Solution.fail({
-    required List<CalcStep> steps,
+  factory Solution.failed({
+    required String head,
+    String? description,
+    String? latex,
+    List<Solution<Object?>> steps = const [],
     required CalcException error,
-    String? finalLatex,
   }) {
     return Solution._(
-      finalLatex: finalLatex ?? "\\text{${error.message}}",
-      steps: List.unmodifiable(steps),
+      head: head,
+      description: description ?? error.message,
+      latex: latex ?? "\\text{${error.message}}",
+      steps: steps,
       error: error,
     );
   }
 
-  // полезные геттеры
-  bool get isSuccess => (value != null) && (error == null);
+  // геттеры состояния
   bool get isFail => (error != null);
+  bool get isSuccess => (error == null) && (value != null);
+  bool get hasSteps => steps.isNotEmpty;
 
-  // перегрузка консольного вывода
   @override
-  String toString() {
+  String toString([int depth = 0]) {
     final buffer = StringBuffer();
+    final currStep = "  " * depth;
 
-    for (var i = 0; i < steps.length; ++i) {
-      buffer.write("[Решение] Шаг ${i + 1}. ");
-      buffer.writeln(steps[i]);
+    buffer.writeln("$currStep- $head ($description)");
+    buffer.writeln("$currStep  Формула LaTeX: $latex");
+
+    if (hasSteps) {
+      buffer.writeln("$currStep  [Подробно...]");
+      for (var i = 0; i < steps.length; ++i) {
+        buffer.write(steps[i].toString(depth + 1));
+      }
     }
 
-    buffer.writeln(
-      isFail
-          ? "${error!.message}"
-          : "[Ответ] $value (LaTeX формат: $finalLatex)",
-    );
+    if (depth == 0) {
+      buffer.writeln(
+        isFail ? "[ИТОГ] ${error!.message}" : "[ОТВЕТ] $value (LaTeX: $latex)",
+      );
+    }
 
     return buffer.toString();
   }
