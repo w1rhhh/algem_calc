@@ -1,0 +1,126 @@
+import "solution.dart";
+import "fraction.dart";
+import "vector.dart" as vec;
+import "vector.dart" show Vector;
+
+String _wrap(Fraction f) =>
+    f < Fraction(0) ? "\\left(${f.toLatex()}\\right)" : f.toLatex();
+
+Solution<Vector> add(Vector a, Vector b, {bool isSubtract = false}) {
+  final answer = isSubtract ? (a - b) : (a + b);
+  final sign = isSubtract ? "-" : "+";
+  final head = isSubtract ? "Вычитание векторов" : "Сложение векторов";
+
+  final leaves = <Step>[];
+  final latexRows = <String>[];
+
+  for (var i = 0; i < a.size; ++i) {
+    final latex = "${a[i].toLatex()} $sign ${_wrap(b[i])}";
+    latexRows.add(latex);
+    leaves.add(Leaf("Координата №${i + 1}: $latex = ${answer[i].toLatex()}"));
+  }
+
+  final midMatrix =
+      "\\begin{pmatrix} ${latexRows.join(" \\\\ ")} \\end{pmatrix}";
+  final fullLatex =
+      "${a.toLatex()} $sign ${b.toLatex()} = $midMatrix = ${answer.toLatex()}";
+
+  return Solution(answer, "$head: $fullLatex", leaves);
+}
+
+Solution<Vector> sub(Vector a, Vector b) => add(a, b, isSubtract: true);
+
+Solution<Vector> scale(Vector a, Object scalar) {
+  final k = toFraction(scalar);
+  final answer = a * k;
+
+  final leaves = <Step>[];
+  final latexRows = <String>[];
+
+  for (var i = 0; i < a.size; ++i) {
+    final latex = "${_wrap(k)} \\cdot ${_wrap(a[i])}";
+    latexRows.add(latex);
+    leaves.add(Leaf("Координата №${i + 1}: $latex = ${answer[i].toLatex()}"));
+  }
+
+  final midMatrix =
+      "\\begin{pmatrix} ${latexRows.join(" \\\\ ")} \\end{pmatrix}";
+  final fullLatex =
+      "${_wrap(k)} \\cdot ${a.toLatex()} = $midMatrix = ${answer.toLatex()}";
+
+  return Solution(answer, "Умножение на скаляр: $fullLatex", leaves);
+}
+
+Solution<Fraction> dot(Vector a, Vector b) {
+  final answer = vec.dot(a, b);
+
+  final leaves = <Step>[];
+  final pairLatex = <String>[];
+  final prodLatex = <String>[];
+
+  for (var i = 0; i < a.size; ++i) {
+    final prod = a[i] * b[i];
+    final expr = "${_wrap(a[i])} \\cdot ${_wrap(b[i])}";
+
+    pairLatex.add(expr);
+    prodLatex.add(_wrap(prod));
+
+    leaves.add(Leaf("Произведение пары №${i + 1}: $expr = ${prod.toLatex()}"));
+  }
+
+  final fullLatex =
+      "${a.toLatex()} \\cdot ${b.toLatex()} = ${pairLatex.join(" + ")} = ${prodLatex.join(" + ")} = ${answer.toLatex()}";
+
+  return Solution(answer, "Скалярное произведение: $fullLatex", leaves);
+}
+
+Solution<Vector> cross(Vector a, Vector b) {
+  final answer = vec.cross(a, b);
+
+  final a1 = a[0], a2 = a[1], a3 = a[2];
+  final b1 = b[0], b2 = b[1], b3 = b[2];
+
+  final exprX =
+      "${_wrap(a2)} \\cdot ${_wrap(b3)} - ${_wrap(a3)} \\cdot ${_wrap(b2)}";
+  final exprY =
+      "-\\left(${_wrap(a1)} \\cdot ${_wrap(b3)} - ${_wrap(a3)} \\cdot ${_wrap(b1)}\\right)";
+  final exprZ =
+      "${_wrap(a1)} \\cdot ${_wrap(b2)} - ${_wrap(a2)} \\cdot ${_wrap(b1)}";
+
+  final leaves = <Step>[
+    Leaf(
+      "Координата X (при i): \\begin{vmatrix} ${a2.toLatex()} & ${a3.toLatex()} \\\\ ${b2.toLatex()} & ${b3.toLatex()} \\end{vmatrix} = $exprX = ${answer[0].toLatex()}",
+    ),
+    Leaf(
+      "Координата Y (при -j): -\\begin{vmatrix} ${a1.toLatex()} & ${a3.toLatex()} \\\\ ${b1.toLatex()} & ${b3.toLatex()} \\end{vmatrix} = $exprY = ${answer[1].toLatex()}",
+    ),
+    Leaf(
+      "Координата Z (при k): \\begin{vmatrix} ${a1.toLatex()} & ${a2.toLatex()} \\\\ ${b1.toLatex()} & ${b2.toLatex()} \\end{vmatrix} = $exprZ = ${answer[2].toLatex()}",
+    ),
+  ];
+
+  final detLatex =
+      "\\begin{vmatrix} "
+      "\\vec{i} & \\vec{j} & \\vec{k} \\\\ "
+      "${a1.toLatex()} & ${a2.toLatex()} & ${a3.toLatex()} \\\\ "
+      "${b1.toLatex()} & ${b2.toLatex()} & ${b3.toLatex()} "
+      "\\end{vmatrix}";
+
+  final fullLatex =
+      "${a.toLatex()} \\times ${b.toLatex()} = $detLatex = ${answer.toLatex()}";
+
+  return Solution(answer, "Векторное произведение: $fullLatex", leaves);
+}
+
+Solution<Fraction> mixed(Vector a, Vector b, Vector c) {
+  final crossSol = cross(a, b);
+  final dotSol = dot(crossSol.answer, c);
+
+  final fullLatex =
+      "\\left(${a.toLatex()} \\times ${b.toLatex()}\\right) \\cdot ${c.toLatex()} = ${crossSol.answer.toLatex()} \\cdot ${c.toLatex()} = ${dotSol.answer.toLatex()}";
+
+  return Solution(dotSol.answer, "Смешанное произведение: $fullLatex", [
+    crossSol.steps,
+    dotSol.steps,
+  ]);
+}

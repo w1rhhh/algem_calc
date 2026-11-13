@@ -1,20 +1,17 @@
-import 'core/vector.dart';
+import "core/vector.dart";
+import "core/vector_steps.dart" as step;
 
 void main() {
-  final v1 = Vector(1, "1/2", "-0.75");
-  final v2 = Vector([2, "3/4", "1,25"]);
-  final Vector v4 = Vector([3, 5, 9]);
+  final a = Vector(1, "1/2", "-3/4");
+  final b = Vector(2, -1, 4);
+  final c = Vector(0, 3, "5/2");
 
-  print("ТЕСТ 1: Успешное сложение");
-  final solOk = v1.add(v2);
-  print(solOk);
+  final fast = a + b * 2 - c;
+  print("Быстрый расчёт: $fast\n");
 
-  print("ТЕСТ 2: Попытка сложить векторы разной длины (проверка ошибки)");
-  final v3 = Vector(5, 10);
-  final solFail = v1.add(v3);
-  print(solFail);
+  print("ТЕСТ 2. Сложение");
+  print(step.add(a, b));
 
-  print("ТЕСТ 3: Тест цепочки");
-  final result = v1 + v1 + v1 + v1 + v4;
-  print(result);
+  print("\nТЕСТ 3. Смешанное произведение");
+  print(step.mixed(a, b, c));
 }

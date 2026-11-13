@@ -220,3 +220,15 @@ class Fraction implements Comparable<Fraction> {
     return "$sign\\frac{${numerator.abs()}}{$denominator}";
   }
 }
+
+Fraction toFraction(Object value) {
+  return switch (value) {
+    Fraction f => f,
+    int i => Fraction(i),
+    BigInt b => Fraction(b),
+    String s => Fraction.parse(s),
+    _ => throw CalcException.invalidFormat(
+      "[Ошибка] Невозможно привести тип ${value.runtimeType} к типу Fraction.",
+    ),
+  };
+}
