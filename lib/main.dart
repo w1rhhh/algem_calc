@@ -1,4 +1,5 @@
 import "core/vector.dart";
+import "core/fraction.dart";
 import "core/vector_steps.dart" as step;
 
 void main() {
@@ -14,4 +15,10 @@ void main() {
 
   print("\nТЕСТ 3. Смешанное произведение");
   print(step.mixed(a, b, c));
+
+  print("\nТЕСТ 4. Остаток от деления у Fraction");
+  final first = Fraction(9, 7);
+  final second = Fraction(1);
+
+  print(first % second);
 }

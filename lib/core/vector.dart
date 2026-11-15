@@ -59,9 +59,7 @@ class Vector {
 
   Vector operator +(Vector other) {
     if (size != other.size) {
-      throw CalcException.dimension(
-        "[Ошибка] Размерность векторов не совпадает.",
-      );
+      throw CalcException.dimension();
     }
 
     return Vector._(List.generate(size, (i) => this[i] + other[i]));
@@ -69,9 +67,7 @@ class Vector {
 
   Vector operator -(Vector other) {
     if (size != other.size) {
-      throw CalcException.dimension(
-        "[Ошибка] Размерность векторов не совпадает.",
-      );
+      throw CalcException.dimension();
     }
 
     return Vector._(List.generate(size, (i) => this[i] - other[i]));
@@ -105,9 +101,7 @@ class Vector {
 
 Fraction dot(Vector a, Vector b) {
   if (a.size != b.size) {
-    throw CalcException.dimension(
-      "[Ошибка] Размерность векторов не совпадает.",
-    );
+    throw CalcException.dimension();
   }
 
   Fraction answer = Fraction(0);

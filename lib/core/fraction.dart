@@ -158,12 +158,15 @@ class Fraction implements Comparable<Fraction> {
     );
   }
 
-  BigInt operator ~/(Fraction other) {
+  Fraction operator ~/(Fraction other) {
     if (other.numerator == _zero) {
       throw CalcException.divisionByZero();
     }
 
-    return (numerator * other.denominator) ~/ (denominator * other.numerator);
+    return Fraction(
+      (numerator * other.denominator) ~/ (denominator * other.numerator),
+      1,
+    );
   }
 
   Fraction operator %(Fraction other) {
@@ -171,7 +174,7 @@ class Fraction implements Comparable<Fraction> {
       throw CalcException.divisionByZero();
     }
 
-    return this - (Fraction(this ~/ other) * other);
+    return this - (this ~/ other * other);
   }
 
   bool operator <(Fraction other) =>
