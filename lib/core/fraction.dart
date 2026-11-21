@@ -213,6 +213,33 @@ class Fraction implements Comparable<Fraction> {
     }
   }
 
+  double toDouble() => numerator.toDouble() / denominator.toDouble();
+
+  int toInt() {
+    if (denominator == _one) {
+      return numerator.toInt();
+    } else {
+      throw CalcException.invalidFormat(
+        "[Ошибка] Дробь $this не является целым числом.",
+      );
+    }
+  }
+
+  BigInt toBigInt() {
+    if (denominator == _one) {
+      return numerator;
+    } else {
+      throw CalcException.invalidFormat(
+        "[Ошибка] Дробь $this не является целым числом.",
+      );
+    }
+  }
+
+  BigInt floor() => numerator ~/ denominator;
+
+  BigInt ceil() =>
+      (denominator == _one) ? numerator : (numerator ~/ denominator) + _one;
+
   // вывод в виде LaTeX
   String toLatex() {
     if (denominator == _one) {
