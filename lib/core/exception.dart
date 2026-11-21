@@ -4,6 +4,7 @@ enum CalcErrorType {
   dimensionMismatch, // несовпадение размерностей матриц/векторов
   notSquareMatrix, // матрица не квадратная (для det, A^-1, Крамера)
   singularMatrix, // вырожденная матрица (det = 0)
+  isEmpty, // пустой объект
 }
 
 class CalcException implements Exception {
@@ -31,6 +32,10 @@ class CalcException implements Exception {
   factory CalcException.singular([
     String details = "[Ошибка] Матрица вырождена (определитель равен нулю).",
   ]) => CalcException(CalcErrorType.singularMatrix, details);
+
+  factory CalcException.isEmpty([
+    String details = "[Ошибка] Объект не может быть пустым.",
+  ]) => CalcException(CalcErrorType.isEmpty, details);
 
   @override
   String toString() => message;

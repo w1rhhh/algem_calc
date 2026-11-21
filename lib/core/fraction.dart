@@ -217,7 +217,13 @@ class Fraction implements Comparable<Fraction> {
 
   int toInt() {
     if (denominator == _one) {
-      return numerator.toInt();
+      if (numerator.isValidInt) {
+        return numerator.toInt();
+      } else {
+        throw CalcException.invalidFormat(
+          "[Ошибка] Дробь $this не может быть переведена в тип данных int, используйте BigInt.",
+        );
+      }
     } else {
       throw CalcException.invalidFormat(
         "[Ошибка] Дробь $this не является целым числом.",
@@ -235,10 +241,17 @@ class Fraction implements Comparable<Fraction> {
     }
   }
 
-  BigInt floor() => numerator ~/ denominator;
+  BigInt floor() {
+    final q = numerator ~/ denominator;
+    final r = numerator % denominator;
+    return (r != _zero && numerator < _zero) ? q - _one : q;
+  }
 
-  BigInt ceil() =>
-      (denominator == _one) ? numerator : (numerator ~/ denominator) + _one;
+  BigInt ceil() {
+    final q = numerator ~/ denominator;
+    final r = numerator % denominator;
+    return (r != _zero && numerator > _zero) ? q + _one : q;
+  }
 
   // вывод в виде LaTeX
   String toLatex() {

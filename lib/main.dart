@@ -21,4 +21,8 @@ void main() {
   final second = Fraction(1);
 
   print(first % second);
+  print(first.toDouble());
+  print(first.floor());
+  print(first.ceil());
+  print(Fraction(4).ceil());
 }

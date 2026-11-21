@@ -18,7 +18,7 @@ class Vector {
       final list = a.map((e) => toFraction(e as Object)).toList();
 
       if (list.isEmpty) {
-        throw CalcException.dimension("[Ошибка] Вектор не может быть пустым.");
+        throw CalcException.isEmpty("[Ошибка] Вектор не может быть пустым.");
       }
 
       if (list.length < 2) {
